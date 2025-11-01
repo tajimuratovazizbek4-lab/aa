@@ -8,6 +8,8 @@ const {
 } = require("node-thermal-printer");
 const { execSync } = require("child_process");
 const fs = require("fs");
+const os = require("os");
+const path = require("path");
 
 const app = express();
 const port = 3001; // Using port 3001 to avoid conflicts
@@ -91,24 +93,32 @@ async function testPrinterConnection() {
   return true;
 }
 
-// Fallback printing using macOS system printing with smaller font options
+// Fallback printing using system printing with smaller font options
 async function printUsingSystemPrinter(content) {
   try {
-    // Create a temporary file with the content
-    const tempFile = "/tmp/thermal_receipt.txt";
+    // Create a temporary file with the content - Windows compatible
+    const os = require('os');
+    const path = require('path');
+    const tempDir = os.tmpdir();
+    const tempFile = path.join(tempDir, 'thermal_receipt.txt');
     fs.writeFileSync(tempFile, content);
 
-    // Use macOS lp command with options for smaller font and thermal printer
-    // -o cpi=17 = 17 characters per inch (smaller font)
-    // -o lpi=8 = 8 lines per inch (tighter line spacing)
-    const command = `lp -d Printer_USB_Printer_Port -o cpi=17 -o lpi=8 -o page-left=0 -o page-right=0 -o page-top=0 -o page-bottom=0 "${tempFile}"`;
+    // Use system print command based on OS
+    let command;
+    if (process.platform === 'win32') {
+      // Windows: Use notepad to print (opens print dialog)
+      command = `notepad /p "${tempFile}"`;
+    } else {
+      // macOS/Linux: Use lp command with options for smaller font
+      command = `lp -d Printer_USB_Printer_Port -o cpi=17 -o lpi=8 -o page-left=0 -o page-right=0 -o page-top=0 -o page-bottom=0 "${tempFile}"`;
+    }
     execSync(command);
 
     // Clean up
     fs.unlinkSync(tempFile);
 
     console.log(
-      "✅ Printed using macOS system printer with compact formatting",
+      `✅ Printed using ${process.platform === 'win32' ? 'Windows' : 'macOS'} system printer with compact formatting`,
     );
     return true;
   } catch (error) {
@@ -1295,11 +1305,12 @@ app.listen(port, () => {
 // Graceful shutdown
 process.on("SIGINT", () => {
   console.log("\n🛑 Shutting down thermal print service...");
-  if (device) {
+  if (printer) {
     try {
-      device.close();
+      // Clean up printer resources if needed
+      console.log("Cleaning up printer resources...");
     } catch (e) {
-      console.log("Device already closed");
+      console.log("Printer already cleaned up");
     }
   }
   process.exit(0);
@@ -1307,11 +1318,12 @@ process.on("SIGINT", () => {
 
 process.on("SIGTERM", () => {
   console.log("\n🛑 Shutting down thermal print service...");
-  if (device) {
+  if (printer) {
     try {
-      device.close();
+      // Clean up printer resources if needed
+      console.log("Cleaning up printer resources...");
     } catch (e) {
-      console.log("Device already closed");
+      console.log("Printer already cleaned up");
     }
   }
   process.exit(0);
