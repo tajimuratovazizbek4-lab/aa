@@ -263,10 +263,15 @@ app.post("/test-print", async (req, res) => {
   try {
     console.log("🖨️  Printing test receipt...");
 
-    // Clear any previous content
-    printer.clear();
+    // Send immediate response to prevent frontend timeout
+    res.status(200).json({ 
+      message: "Test print initiated successfully.",
+      status: "printing",
+      timestamp: new Date().toISOString()
+    });
 
-    // Build test receipt
+    // Continue with printing in background
+    printer.clear();
     printer.alignCenter();
     printer.setTextDoubleHeight();
     printer.bold(true);
@@ -274,7 +279,6 @@ app.post("/test-print", async (req, res) => {
     printer.bold(false);
     printer.setTextNormal();
     printer.drawLine();
-
     printer.alignLeft();
     printer.println("Принтер: H-58C Thermal Printer");
     printer.println("Ширина бумаги: 58мм");
@@ -286,14 +290,18 @@ app.post("/test-print", async (req, res) => {
     printer.newLine();
     printer.cut();
 
-    // Execute print with better error handling
+    // Execute print with timeout
     try {
-      const result = await printer.execute();
+      const result = await Promise.race([
+        printer.execute(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Print timeout')), 5000)
+        )
+      ]);
       console.log("✅ Test receipt printed successfully");
-      res.status(200).json({ message: "Test print sent successfully." });
     } catch (executeError) {
       console.error("❌ Execute error:", executeError);
-      console.log("🔄 Trying macOS system printer fallback...");
+      console.log("🔄 Trying system printer fallback...");
 
       try {
         // Create compact text content for system printer
@@ -308,28 +316,20 @@ app.post("/test-print", async (req, res) => {
 
 
 `;
-
         await printUsingSystemPrinter(textContent);
-        res.status(200).json({
-          message: "Test print sent successfully via macOS system printer",
-          method: "system_printer",
-        });
+        console.log("✅ Test printed via system printer");
       } catch (systemError) {
         console.error("❌ System printer also failed:", systemError);
-        const buffer = printer.getBuffer();
-        res.status(200).json({
-          message:
-            "Print data prepared (printer may not be physically connected)",
-          buffer_size: buffer.length,
-          method: "buffer_only",
-        });
       }
     }
   } catch (e) {
     console.error("❌ Error during test printing:", e);
-    res.status(500).json({ error: `Print failed: ${e.message}` });
+    if (!res.headersSent) {
+      res.status(500).json({ error: `Print failed: ${e.message}` });
+    }
   }
 });
+
 
 // Main print endpoint for shift closure receipts
 app.post("/print-shift-closure", async (req, res) => {
