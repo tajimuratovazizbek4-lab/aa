@@ -6,7 +6,7 @@ const {
   CharacterSet,
   BreakLine,
 } = require("node-thermal-printer");
-const { execSync } = require("child_process");
+const { execSync, exec } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -26,6 +26,7 @@ const PRODUCT_ID = 0x070b; // H-58C Thermal Printer
 
 let printer;
 let isDeviceReady = false;
+let windowsPrinterName = null; // Store Windows printer name
 
 // Initialize printer device
 async function initializePrinter() {
@@ -93,6 +94,43 @@ async function testPrinterConnection() {
   return true;
 }
 
+// Detect thermal printer on Windows
+function detectWindowsThermalPrinter() {
+  if (process.platform !== 'win32') return null;
+  
+  try {
+    // Get list of printers using PowerShell
+    const result = execSync('powershell -Command "Get-Printer | Select-Object Name, DriverName | ConvertTo-Json"', { encoding: 'utf8' });
+    const printers = JSON.parse(result);
+    const printerList = Array.isArray(printers) ? printers : [printers];
+    
+    console.log('\n📋 Available Windows Printers:');
+    printerList.forEach(p => {
+      console.log(`   - ${p.Name} (${p.DriverName})`);
+    });
+    
+    // Look for thermal printer (USB, POS, or similar names)
+    const thermalPrinter = printerList.find(p => 
+      p.Name.toLowerCase().includes('usb') ||
+      p.Name.toLowerCase().includes('pos') ||
+      p.Name.toLowerCase().includes('thermal') ||
+      p.Name.toLowerCase().includes('h-58') ||
+      p.Name.toLowerCase().includes('receipt')
+    );
+    
+    if (thermalPrinter) {
+      console.log(`✅ Detected thermal printer: ${thermalPrinter.Name}`);
+      return thermalPrinter.Name;
+    }
+    
+    console.log('⚠️  No thermal printer detected, will use default printer');
+    return null;
+  } catch (error) {
+    console.error('⚠️  Could not detect printers:', error.message);
+    return null;
+  }
+}
+
 // Fallback printing using system printing with smaller font options
 async function printUsingSystemPrinter(content) {
   try {
@@ -101,18 +139,77 @@ async function printUsingSystemPrinter(content) {
     const path = require('path');
     const tempDir = os.tmpdir();
     const tempFile = path.join(tempDir, 'thermal_receipt.txt');
-    fs.writeFileSync(tempFile, content);
-
+    
     // Use system print command based on OS
     let command;
     if (process.platform === 'win32') {
-      // Windows: Use notepad to print (opens print dialog)
-      command = `notepad /p "${tempFile}"`;
+      // Windows: Write file with UTF-8 encoding
+      fs.writeFileSync(tempFile, content, { encoding: 'utf8' });
+      
+      // Detect printer if not already done
+      if (!windowsPrinterName) {
+        windowsPrinterName = detectWindowsThermalPrinter();
+      }
+      
+      const printerName = windowsPrinterName || 'default';
+      console.log(`🖨️  Sending to printer: ${printerName}`);
+      
+      // Create a PowerShell script that uses .NET to send raw data to printer
+      const psScriptPath = path.join(tempDir, 'print_thermal.ps1');
+      const psScript = `
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Printing
+
+$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
+$content = [System.IO.File]::ReadAllText("${tempFile.replace(/\\/g, '\\\\')}", [System.Text.Encoding]::UTF8)
+
+try {
+    if ($printerName) {
+        # Try to print to specific printer
+        $printDoc = New-Object System.Drawing.Printing.PrintDocument
+        $printDoc.PrinterSettings.PrinterName = $printerName
+        
+        $printDoc.add_PrintPage({
+            param($sender, $ev)
+            $ev.Graphics.DrawString($content, (New-Object System.Drawing.Font("Courier New", 8)), [System.Drawing.Brushes]::Black, 0, 0)
+            $ev.HasMorePages = $false
+        })
+        
+        $printDoc.Print()
+        Write-Host "Printed to $printerName"
+    } else {
+        # Use default printer
+        $printDoc = New-Object System.Drawing.Printing.PrintDocument
+        
+        $printDoc.add_PrintPage({
+            param($sender, $ev)
+            $ev.Graphics.DrawString($content, (New-Object System.Drawing.Font("Courier New", 8)), [System.Drawing.Brushes]::Black, 0, 0)
+            $ev.HasMorePages = $false
+        })
+        
+        $printDoc.Print()
+        Write-Host "Printed to default printer"
+    }
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
+}
+`;
+      
+      fs.writeFileSync(psScriptPath, psScript, { encoding: 'utf8' });
+      
+      // Execute the PowerShell script
+      command = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`;
+      execSync(command, { encoding: 'utf8' });
+      
+      // Clean up PowerShell script
+      fs.unlinkSync(psScriptPath);
     } else {
       // macOS/Linux: Use lp command with options for smaller font
+      fs.writeFileSync(tempFile, content);
       command = `lp -d Printer_USB_Printer_Port -o cpi=17 -o lpi=8 -o page-left=0 -o page-right=0 -o page-top=0 -o page-bottom=0 "${tempFile}"`;
+      execSync(command);
     }
-    execSync(command);
 
     // Clean up
     fs.unlinkSync(tempFile);
