@@ -1655,25 +1655,25 @@ const POSInterfaceCore = () => {
                   <table className="w-full">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="text-left p-3 font-bold text-gray-700 text-base">
+                        <th className="text-left p-2 font-bold text-gray-700 text-sm">
                           №
                         </th>
-                        <th className="text-left p-3 font-bold text-gray-700 text-base">
+                        <th className="text-left p-2 font-bold text-gray-700 text-sm">
                           Товар
                         </th>
-                        <th className="text-right p-3 font-bold text-gray-700 text-base">
+                        <th className="text-right p-2 font-bold text-gray-700 text-sm">
                           Цена
                         </th>
-                        <th className="text-center p-3 font-bold text-gray-700 text-base">
+                        <th className="text-center p-2 font-bold text-gray-700 text-sm">
                           Ед. изм.
                         </th>
-                        <th className="text-right p-3 font-bold text-gray-700 text-base">
+                        <th className="text-right p-2 font-bold text-gray-700 text-sm">
                           Кол-во
                         </th>
-                        <th className="text-right p-3 font-bold text-gray-700 text-base">
+                        <th className="text-right p-2 font-bold text-gray-700 text-sm">
                           Сумма
                         </th>
-                        <th className="text-center p-3 font-bold text-gray-700 text-base w-20">
+                        <th className="text-center p-2 font-bold text-gray-700 text-sm w-16">
                           Действия
                         </th>
                       </tr>
@@ -1713,21 +1713,21 @@ const POSInterfaceCore = () => {
                                   : "bg-white"
                             } transition-all duration-200 hover:bg-gray-100`}
                           >
-                            <td className="p-3 text-gray-900 text-sm font-medium">{index + 1}</td>
-                            <td className="p-3 font-medium text-gray-900">
+                            <td className="p-2 text-gray-900 text-xs font-medium">{index + 1}</td>
+                            <td className="p-2 font-medium text-gray-900">
                               <div>
-                                <div className="text-sm">{product.name}</div>
+                                <div className="text-xs">{product.name}</div>
                                 {product.barcode && (
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-xs text-gray-500">
                                     Штрихкод: {product.barcode}
                                   </div>
                                 )}
                                 {product.product.ikpu && (
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-xs text-gray-500">
                                     ИКПУ: {product.product.ikpu}
                                   </div>
                                 )}
-                                <div className="text-sm text-green-600 font-medium">
+                                <div className="text-xs text-green-600 font-medium">
                                   В наличии:{" "}
                                   {parseFloat(
                                     String(product.product.quantity),
@@ -1736,7 +1736,7 @@ const POSInterfaceCore = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="p-3 text-right text-gray-900">
+                            <td className="p-2 text-right text-gray-900">
                               <button
                                 onClick={() => {
                                   setSelectedProductForPrice(product);
@@ -1744,12 +1744,12 @@ const POSInterfaceCore = () => {
                                   setPriceInput(product.price.toString());
                                   setIsPriceModalOpen(true);
                                 }}
-                                className="w-24 text-right px-3 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                                className="w-20 text-right px-2 py-1 text-xs font-medium border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
                               >
                                 {product.price.toLocaleString()}
                               </button>
                             </td>
-                            <td className="p-3 text-center text-gray-900">
+                            <td className="p-2 text-center text-gray-900">
                               {product.product.available_units &&
                               product.product.available_units.length > 0 ? (
                                 <Select
@@ -1773,7 +1773,7 @@ const POSInterfaceCore = () => {
                                     }
                                   }}
                                 >
-                                  <SelectTrigger className="w-20 text-xs">
+                                  <SelectTrigger className="w-16 text-xs h-7">
                                     <SelectValue placeholder="Ед." />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -1796,8 +1796,8 @@ const POSInterfaceCore = () => {
                                 </span>
                               )}
                             </td>
-                            <td className="p-3 text-right text-gray-900">
-                              <div className="flex items-center justify-end space-x-2">
+                            <td className="p-2 text-right text-gray-900">
+                              <div className="flex items-center justify-end space-x-1">
                                 <button
                                   onClick={() => {
                                     const newQuantity = product.quantity - 1;
@@ -1810,17 +1810,17 @@ const POSInterfaceCore = () => {
                                     }
                                   }}
                                   disabled={product.quantity <= 1}
-                                  className={`w-10 h-10 rounded-full ${
+                                  className={`w-7 h-7 rounded-full ${
                                     index === focusedProductIndex
                                       ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
                                       : "bg-gray-200 hover:bg-gray-300"
-                                  } ${product.quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-base font-bold transition-colors`}
+                                  } ${product.quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-sm font-bold transition-colors`}
                                 >
                                   −
                                 </button>
                                 <button
                                   onClick={() => handleQuantityClick(product, index)}
-                                  className={`min-w-[80px] min-h-[40px] text-center border rounded-lg px-3 py-2 text-lg font-semibold transition-all ${
+                                  className={`min-w-[60px] min-h-[28px] text-center border rounded-lg px-2 py-1 text-sm font-semibold transition-all ${
                                     index === focusedProductIndex
                                       ? "border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
                                       : "border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50"
@@ -1840,20 +1840,20 @@ const POSInterfaceCore = () => {
                                     product.quantity >=
                                     parseFloat(String(product.product.quantity))
                                   }
-                                  className={`w-10 h-10 rounded-full ${
+                                  className={`w-7 h-7 rounded-full ${
                                     index === focusedProductIndex
                                       ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
                                       : "bg-gray-200 hover:bg-gray-300"
-                                  } ${product.quantity >= parseFloat(String(product.product.quantity)) ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-base font-bold transition-colors`}
+                                  } ${product.quantity >= parseFloat(String(product.product.quantity)) ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-sm font-bold transition-colors`}
                                 >
                                   +
                                 </button>
                               </div>
                             </td>
-                            <td className="p-3 text-right font-bold text-gray-900 text-sm">
+                            <td className="p-2 text-right font-bold text-gray-900 text-xs">
                               {product.total.toLocaleString()}
                             </td>
-                            <td className="p-3 text-center">
+                            <td className="p-2 text-center">
                               <button
                                 onClick={() => {
                                   removeProduct(product.id);
@@ -1865,13 +1865,13 @@ const POSInterfaceCore = () => {
                                     );
                                   }
                                 }}
-                                className={`w-10 h-10 rounded-full ${
+                                className={`w-8 h-8 rounded-full ${
                                   index === focusedProductIndex
                                     ? "bg-red-200 hover:bg-red-300 text-red-700 ring-2 ring-red-400"
                                     : "bg-red-100 hover:bg-red-200 text-red-600"
                                 } flex items-center justify-center transition-all`}
                               >
-                                <X className="w-5 h-5" />
+                                <X className="w-4 h-4" />
                               </button>
                             </td>
                           </tr>
