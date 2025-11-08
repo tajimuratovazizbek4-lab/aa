@@ -1427,19 +1427,19 @@ const POSInterfaceCore = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Product Header */}
-          <div className="mb-6 px-6 pt-6">
-            <h2 className="text-3xl font-bold mb-2 text-gray-900">
+          <div className="mb-3 px-6 pt-3 flex-shrink-0">
+            <h2 className="text-lg font-bold mb-1 text-gray-900">
               {cartProducts.length > 0
                 ? `${cartProducts.length} товар(ов) в корзине`
                 : "Корзина пуста"}
             </h2>
-            <div className="text-xl text-gray-700 font-medium">
+            <div className="text-sm text-gray-700 font-medium">
               Общая сумма: {total.toLocaleString()} сум
             </div>
 
             {/* User Selection Display */}
             {(selectedSeller || selectedClient) && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <UserIcon className="w-5 h-5 text-blue-600" />
@@ -1563,7 +1563,7 @@ const POSInterfaceCore = () => {
 
           {/* Product Table */}
           <div
-            className={`flex flex-col flex-1 ${isFullscreenMode ? "p-4" : "p-6"} min-h-0`}
+            className={`flex flex-col flex-1 ${isFullscreenMode ? "p-4 pt-0" : "p-6 pt-0"} min-h-0 overflow-hidden`}
           >
             {/* Barcode Scanner Input - Positioned off-screen but still focusable */}
             <input
