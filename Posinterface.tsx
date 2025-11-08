@@ -2027,53 +2027,53 @@ const POSInterfaceCore = () => {
       {isCalculatorVisible && (
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-full">
           {/* Calculator Display */}
-          <div className="p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
             {/* Calculator Header with Close Button */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold text-gray-900">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xl font-bold text-gray-900">
                 Калькулятор
               </h3>
               <button
                 onClick={() => setIsCalculatorVisible(false)}
-                className="p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Закрыть калькулятор"
               >
-                <X className="w-6 h-6 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            <div className="bg-gray-100 p-5 rounded-xl mb-4">
+            <div className="bg-gray-100 p-4 rounded-xl mb-3">
               {operation && previousInput && (
-                <div className="text-right text-2xl text-gray-600 font-mono">
+                <div className="text-right text-xl text-gray-600 font-mono">
                   {previousInput} {operation}
                 </div>
               )}
-              <div className="text-right text-5xl font-mono text-gray-900">
+              <div className="text-right text-4xl font-mono text-gray-900">
                 {currentInput || "0"}
               </div>
             </div>
           </div>
 
           {/* Calculator Keypad */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            <div className="grid grid-cols-4 gap-5">
+          <div className="flex-1 p-4">
+            <div className="grid grid-cols-4 gap-3">
               {/* Row 1 */}
               <button
                 onClick={handleClearInput}
-                className="bg-orange-100 hover:bg-orange-200 rounded-2xl transition-colors h-24 flex items-center justify-center col-span-2 active:scale-95 touch-manipulation"
+                className="bg-orange-100 hover:bg-orange-200 rounded-xl transition-colors h-16 flex items-center justify-center col-span-2 active:scale-95 touch-manipulation"
               >
-                <span className="text-2xl font-bold text-orange-600">
+                <span className="text-lg font-bold text-orange-600">
                   Очистить
                 </span>
               </button>
               <button
                 onClick={handleBackspace}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-3xl font-semibold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-2xl font-semibold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
-                <X className="w-8 h-8" />
+                <X className="w-6 h-6" />
               </button>
               <button
                 onClick={() => handleOperation("/")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
+                className="bg-blue-100 hover:bg-blue-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 ÷
               </button>
@@ -2081,25 +2081,25 @@ const POSInterfaceCore = () => {
               {/* Row 2 */}
               <button
                 onClick={() => handleNumberClick("7")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 7
               </button>
               <button
                 onClick={() => handleNumberClick("8")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 8
               </button>
               <button
                 onClick={() => handleNumberClick("9")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 9
               </button>
               <button
                 onClick={() => handleOperation("*")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
+                className="bg-blue-100 hover:bg-blue-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 ×
               </button>
@@ -2107,25 +2107,25 @@ const POSInterfaceCore = () => {
               {/* Row 3 */}
               <button
                 onClick={() => handleNumberClick("4")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 4
               </button>
               <button
                 onClick={() => handleNumberClick("5")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 5
               </button>
               <button
                 onClick={() => handleNumberClick("6")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 6
               </button>
               <button
                 onClick={() => handleOperation("-")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
+                className="bg-blue-100 hover:bg-blue-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 −
               </button>
@@ -2133,25 +2133,25 @@ const POSInterfaceCore = () => {
               {/* Row 4 */}
               <button
                 onClick={() => handleNumberClick("1")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 1
               </button>
               <button
                 onClick={() => handleNumberClick("2")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 2
               </button>
               <button
                 onClick={() => handleNumberClick("3")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 3
               </button>
               <button
                 onClick={() => handleOperation("+")}
-                className="bg-blue-100 hover:bg-blue-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
+                className="bg-blue-100 hover:bg-blue-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-blue-600 active:scale-95 touch-manipulation"
               >
                 +
               </button>
@@ -2159,27 +2159,27 @@ const POSInterfaceCore = () => {
               {/* Row 5 */}
               <button
                 onClick={() => handleNumberClick("0")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 col-span-2 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 col-span-2 active:scale-95 touch-manipulation"
               >
                 0
               </button>
               <button
                 onClick={() => handleNumberClick(",")}
-                className="bg-gray-100 hover:bg-gray-200 rounded-2xl text-4xl font-bold transition-colors h-24 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
+                className="bg-gray-100 hover:bg-gray-200 rounded-xl text-3xl font-bold transition-colors h-16 flex items-center justify-center text-gray-900 active:scale-95 touch-manipulation"
               >
                 ,
               </button>
               <button
                 onClick={handleEquals}
-                className="bg-green-100 hover:bg-green-200 rounded-2xl transition-colors h-24 flex items-center justify-center active:scale-95 touch-manipulation"
+                className="bg-green-100 hover:bg-green-200 rounded-xl transition-colors h-16 flex items-center justify-center active:scale-95 touch-manipulation"
               >
-                <span className="text-3xl font-bold text-green-600">=</span>
+                <span className="text-2xl font-bold text-green-600">=</span>
               </button>
             </div>
           </div>
 
           {/* Payment Button */}
-          <div className="p-6 border-t border-gray-200 flex-shrink-0 bg-white">
+          <div className="p-4 border-t border-gray-200 flex-shrink-0 bg-white">
             <button
               onClick={() => {
                 setDiscountAmount(0);
@@ -2189,7 +2189,7 @@ const POSInterfaceCore = () => {
                 setIsPaymentModalOpen(true);
               }}
               disabled={cartProducts.length === 0}
-              className={`w-full py-10 rounded-2xl text-2xl font-bold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed min-h-[100px] active:scale-95 touch-manipulation ${
+              className={`w-full py-6 rounded-xl text-xl font-bold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed min-h-[80px] active:scale-95 touch-manipulation ${
                 onCredit
                   ? "bg-amber-600 text-white hover:bg-amber-700"
                   : "bg-blue-600 text-white hover:bg-blue-700"
