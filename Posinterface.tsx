@@ -2478,13 +2478,13 @@ const POSInterfaceCore = () => {
       {/* User Selection Modal */}
       <WideDialog open={isUserModalOpen} onOpenChange={setIsUserModalOpen}>
         <WideDialogContent className="max-h-[90vh] overflow-hidden p-0">
-          <WideDialogHeader className="p-6 pb-4">
-            <WideDialogTitle className="text-xl font-bold">
+          <WideDialogHeader className="p-4 pb-3">
+            <WideDialogTitle className="text-lg font-bold">
               Выбор пользователя для долга
             </WideDialogTitle>
           </WideDialogHeader>
 
-          <div className="p-6 space-y-6">
+          <div className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
             {/* Seller Selection - Only for admin/superuser */}
             {(isAdmin || isSuperUser) && (
               <div>
@@ -2729,7 +2729,7 @@ const POSInterfaceCore = () => {
             )}
 
             {/* Action Buttons */}
-            <div className="flex space-x-3 pt-4">
+            <div className="flex space-x-3 pt-2">
               <Button
                 onClick={() => {
                   // Reset selections
@@ -3062,16 +3062,16 @@ const POSInterfaceCore = () => {
         open={isPaymentModalOpen}
         onOpenChange={setIsPaymentModalOpen}
       >
-        <WideDialogContent className="max-w-4xl">
-          <div className="p-8">
+        <WideDialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="p-4">
             {/* Header with Back Button and Pay Button */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => setIsPaymentModalOpen(false)}
                 className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
               >
-                <span className="text-2xl">←</span>
-                <span className="text-lg">Назад</span>
+                <span className="text-xl">←</span>
+                <span className="text-base">Назад</span>
                 <span className="text-sm bg-gray-200 text-gray-600 px-2 py-1 rounded">
                   B
                 </span>
@@ -3233,7 +3233,7 @@ const POSInterfaceCore = () => {
                       (total - discountAmount) &&
                     !onCredit)
                 }
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl text-lg font-semibold flex items-center gap-2 transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl text-base font-semibold flex items-center gap-2 transition-colors"
               >
                 {isProcessingSale ? "Обработка..." : "Оплатить"}
                 <span className="text-sm bg-blue-500 px-2 py-1 rounded">L</span>
@@ -3241,8 +3241,8 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Discount Input */}
-            <div className="mb-8">
-              <label className="block text-gray-700 text-lg font-medium mb-2">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-base font-medium mb-2">
                 Скидка:
               </label>
               <input
@@ -3252,21 +3252,21 @@ const POSInterfaceCore = () => {
                 onFocus={(e) => e.stopPropagation()}
                 onBlur={(e) => e.stopPropagation()}
                 placeholder="0"
-                className="w-full text-3xl font-bold bg-gray-50 border-2 border-gray-300 rounded-xl p-4 focus:outline-none focus:border-blue-500"
+                className="w-full text-2xl font-bold bg-gray-50 border-2 border-gray-300 rounded-xl p-3 focus:outline-none focus:border-blue-500"
               />
             </div>
 
             {/* Payment Summary */}
-            <div className="grid grid-cols-3 gap-8 mb-8">
+            <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
-                <div className="text-gray-500 text-lg mb-2">Итого:</div>
-                <div className="text-5xl font-bold text-gray-900">
+                <div className="text-gray-500 text-sm mb-1">Итого:</div>
+                <div className="text-3xl font-bold text-gray-900">
                   {total.toLocaleString()} UZS
                 </div>
               </div>
               <div>
-                <div className="text-green-500 text-lg mb-2">К оплате:</div>
-                <div className="text-5xl font-bold text-green-500">
+                <div className="text-green-500 text-sm mb-1">К оплате:</div>
+                <div className="text-3xl font-bold text-green-500">
                   {Math.max(
                     0,
                     (total - discountAmount) -
@@ -3279,8 +3279,8 @@ const POSInterfaceCore = () => {
                 </div>
               </div>
               <div>
-                <div className="text-blue-500 text-lg mb-2">СДАЧА:</div>
-                <div className="text-5xl font-bold text-blue-500">
+                <div className="text-blue-500 text-sm mb-1">СДАЧА:</div>
+                <div className="text-3xl font-bold text-blue-500">
                   {(() => {
                     const totalPaid = paymentMethods.reduce((sum, p) => sum + (p.amount || 0), 0);
                     const finalTotal = total - discountAmount;
@@ -3292,7 +3292,7 @@ const POSInterfaceCore = () => {
             </div>
 
             {/* Payment Method Buttons */}
-            <div className="flex gap-4 mb-8">
+            <div className="flex gap-3 mb-4">
               <button
                 onClick={() => {
                   if (onCredit) return; // Disable when in credit mode
