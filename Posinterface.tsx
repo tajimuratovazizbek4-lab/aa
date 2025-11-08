@@ -3764,5 +3764,5 @@ const POSInterface = () => {
 
   return <POSInterfaceCore />;
 };
-
+ss
 export default POSInterface;
