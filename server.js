@@ -733,6 +733,22 @@ function applyFontWeight(printer, weight) {
   }
 }
 
+// Helper function to format numbers without unnecessary decimals
+// Examples: 1.000 -> "1", 1.12 -> "1.12", 1.5 -> "1.5"
+function formatNumber(num) {
+  const parsed = parseFloat(num);
+  if (isNaN(parsed)) return '0';
+  
+  // Check if the number is a whole number
+  if (parsed % 1 === 0) {
+    return parsed.toString(); // Return without decimals (e.g., "1")
+  }
+  
+  // Return with decimals, removing only trailing zeros after decimal point
+  // This will keep "1.12" as "1.12" but turn "1.50" into "1.5" and "1.00" into "1"
+  return parsed.toFixed(3).replace(/\.?0+$/, '');
+}
+
 // Sale receipt printing endpoint with template support
 app.post("/print-sale-receipt", async (req, res) => {
   if (!isDeviceReady || !printer) {
@@ -843,7 +859,7 @@ app.post("/print-sale-receipt", async (req, res) => {
 
         case "itemList":
           console.log(`  ➜ Printing ${saleData.sale_items.length} items`);
-          applyFontWeight(printer, compStyles.fontWeight);
+          const itemListBold = compStyles.fontWeight === "bold";
 
           saleData.sale_items.forEach((item, index) => {
             const unitName =
@@ -852,10 +868,18 @@ app.post("/print-sale-receipt", async (req, res) => {
               )?.short_name || "шт";
 
             const price = parseFloat(item.subtotal) / parseFloat(item.quantity);
+            const formattedQty = formatNumber(item.quantity);
+            const formattedPrice = formatNumber(price);
+            const formattedSubtotal = formatNumber(item.subtotal);
 
+            // Product name is always bold for emphasis
+            printer.bold(true);
             printer.println(`${index + 1}. ${item.product_read.product_name}`);
+            
+            // Quantity/price line uses component style
+            printer.bold(itemListBold);
             printer.println(
-              `   ${item.quantity} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}`,
+              `   ${formattedQty} ${unitName} x ${formattedPrice} = ${formattedSubtotal}`,
             );
           });
 
@@ -945,7 +969,12 @@ app.post("/print-sale-receipt", async (req, res) => {
                   component.data.text,
                   saleData,
                 );
-                textContent += text + "\n";
+                // Add bold markers for system printer if component is bold
+                if (component.styles?.fontWeight === "bold") {
+                  textContent += `**${text}**\n`;
+                } else {
+                  textContent += text + "\n";
+                }
               }
               break;
 
@@ -965,8 +994,12 @@ app.post("/print-sale-receipt", async (req, res) => {
                   )?.short_name || "шт";
                 const price =
                   parseFloat(item.subtotal) / parseFloat(item.quantity);
-                textContent += `${index + 1}. ${item.product_read.product_name}\n`;
-                textContent += `   ${item.quantity} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}\n`;
+                const formattedQty = formatNumber(item.quantity);
+                const formattedPrice = formatNumber(price);
+                const formattedSubtotal = formatNumber(item.subtotal);
+                // Mark bold items with ** for system printer
+                textContent += `**${index + 1}. ${item.product_read.product_name}**\n`;
+                textContent += `   ${formattedQty} ${unitName} x ${formattedPrice} = ${formattedSubtotal}\n`;
               });
               break;
 
@@ -979,8 +1012,8 @@ app.post("/print-sale-receipt", async (req, res) => {
               break;
 
             case "totals":
-
-              textContent += `ИТОГО: ${formatCurrency(saleData.total_amount)}\n`;
+              // Mark totals as bold for system printer
+              textContent += `**ИТОГО: ${formatCurrency(saleData.total_amount)}**\n`;
               break;
           }
         }
