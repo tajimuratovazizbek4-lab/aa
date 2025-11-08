@@ -2025,7 +2025,7 @@ const POSInterfaceCore = () => {
 
       {/* Right Panel - Calculator */}
       {isCalculatorVisible && (
-        <div className="w-96 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col h-full">
+        <div className="w-72 flex-shrink-0 bg-white border-l border-gray-200 flex flex-col h-full">
           {/* Calculator Display */}
           <div className="p-3 border-b border-gray-200 flex-shrink-0">
             {/* Calculator Header with Close Button */}
@@ -2763,8 +2763,8 @@ const POSInterfaceCore = () => {
         onOpenChange={setIsQuantityModalOpen}
       >
         <WideDialogContent className="max-w-md p-0">
-          <WideDialogHeader className="p-6 pb-4">
-            <WideDialogTitle className="text-xl font-bold text-center">
+          <WideDialogHeader className="p-4 pb-3">
+            <WideDialogTitle className="text-lg font-bold text-center">
               Выберите количество
             </WideDialogTitle>
             {selectedProductForQuantity && (
@@ -2793,11 +2793,11 @@ const POSInterfaceCore = () => {
             )}
           </WideDialogHeader>
 
-          <div className="p-6 pt-2">
+          <div className="p-4 pt-2">
             {!isManualQuantityMode ? (
               <>
                 {/* Preset Quantity Cards */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-3 mb-4">
                   {[5, 10, 15, 20, 25, 30].map((qty) => {
                     const availableQty = selectedProductForQuantity?.product
                       .quantity
@@ -2811,19 +2811,19 @@ const POSInterfaceCore = () => {
                         key={qty}
                         onClick={() => !isDisabled && handleQuantitySelect(qty)}
                         disabled={isDisabled}
-                        className={`border-2 rounded-2xl p-8 transition-all duration-200 min-h-[120px] touch-manipulation ${
+                        className={`border-2 rounded-2xl p-6 transition-all duration-200 min-h-[100px] touch-manipulation ${
                           isDisabled
                             ? "bg-gray-100 border-gray-300 opacity-40 cursor-not-allowed"
                             : "bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-400 transform hover:scale-105 active:scale-95"
                         }`}
                       >
                         <div
-                          className={`text-4xl font-bold mb-2 ${isDisabled ? "text-gray-400" : "text-blue-700"}`}
+                          className={`text-3xl font-bold mb-1 ${isDisabled ? "text-gray-400" : "text-blue-700"}`}
                         >
                           {qty}
                         </div>
                         <div
-                          className={`text-base font-medium ${isDisabled ? "text-gray-400" : "text-blue-600"}`}
+                          className={`text-sm font-medium ${isDisabled ? "text-gray-400" : "text-blue-600"}`}
                         >
                           {selectedProductForQuantity?.selectedUnit
                             ?.short_name || "штук"}
@@ -2840,12 +2840,12 @@ const POSInterfaceCore = () => {
 
                 {/* Current Quantity Display */}
                 {selectedProductForQuantity && (
-                  <div className="bg-gray-50 rounded-xl p-5 mb-4">
+                  <div className="bg-gray-50 rounded-xl p-4 mb-3">
                     <div className="text-center">
-                      <div className="text-base text-gray-600 mb-2 font-medium">
+                      <div className="text-sm text-gray-600 mb-1 font-medium">
                         Текущее количество
                       </div>
-                      <div className="text-3xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold text-gray-900">
                         {selectedProductForQuantity.quantity.toFixed(2)}{" "}
                         {selectedProductForQuantity.selectedUnit?.short_name ||
                           "штук"}
@@ -2858,13 +2858,13 @@ const POSInterfaceCore = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setIsQuantityModalOpen(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
                   >
                     Отмена
                   </button>
                   <button
                     onClick={handleManualQuantityMode}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
                   >
                     Ввести вручную
                   </button>
@@ -2873,7 +2873,7 @@ const POSInterfaceCore = () => {
             ) : (
               <>
                 {/* Manual Input Mode */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Введите количество
                   </label>
@@ -2930,7 +2930,7 @@ const POSInterfaceCore = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={() => setIsManualQuantityMode(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
                   >
                     Назад
                   </button>
@@ -2946,7 +2946,7 @@ const POSInterfaceCore = () => {
                           ),
                         )
                     }
-                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-5 rounded-xl text-lg font-bold transition-colors min-h-[70px] active:scale-95 touch-manipulation"
+                    className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-xl text-base font-bold transition-colors min-h-[56px] active:scale-95 touch-manipulation"
                   >
                     Применить
                   </button>
@@ -3764,5 +3764,5 @@ const POSInterface = () => {
 
   return <POSInterfaceCore />;
 };
-ss
+
 export default POSInterface;
