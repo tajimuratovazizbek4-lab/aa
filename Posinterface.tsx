@@ -306,7 +306,7 @@ const POSInterfaceCore = () => {
   
   // Only fetch users if admin or superuser - sellers don't need the full user list
   const { data: usersData } = useGetUsers({
-    enabled: isAdmin || isSuperUser,
+    enabled: !!currentUser && (isAdmin || isSuperUser),
   });
   const { data: clientsData } = useGetClients({
     params: { name: clientSearchTerm },
@@ -400,7 +400,7 @@ const POSInterfaceCore = () => {
       console.log("Setting selectedSeller to:", currentUser.id);
       setSelectedSeller(currentUser.id);
     }
-  }, [currentUser?.id, isAdmin, isSuperUser, selectedSeller, users]);
+  }, [currentUser?.id, isAdmin, isSuperUser, selectedSeller]);
 
   // Calculate totals
   const total = cartProducts.reduce((sum, product) => sum + product.total, 0);
@@ -2025,7 +2025,7 @@ const POSInterfaceCore = () => {
 
       {/* Right Panel - Calculator */}
       {isCalculatorVisible && (
-        <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-screen">
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-full">
           {/* Calculator Display */}
           <div className="p-6 border-b border-gray-200 flex-shrink-0">
             {/* Calculator Header with Close Button */}
