@@ -299,7 +299,15 @@ const POSInterfaceCore = () => {
 
   // User data
   const { data: currentUser } = useCurrentUser();
-  const { data: usersData } = useGetUsers({});
+  
+  // Check user roles
+  const isAdmin = currentUser?.role === "Администратор";
+  const isSuperUser = currentUser?.is_superuser === true;
+  
+  // Only fetch users if admin or superuser - sellers don't need the full user list
+  const { data: usersData } = useGetUsers({
+    enabled: isAdmin || isSuperUser,
+  });
   const { data: clientsData } = useGetClients({
     params: { name: clientSearchTerm },
   });
@@ -308,10 +316,6 @@ const POSInterfaceCore = () => {
   const clients = Array.isArray(clientsData)
     ? clientsData
     : clientsData?.results || [];
-
-  // Check user roles
-  const isAdmin = currentUser?.role === "Администратор";
-  const isSuperUser = currentUser?.is_superuser === true;
 
   // Save current session state whenever it changes
   useEffect(() => {
