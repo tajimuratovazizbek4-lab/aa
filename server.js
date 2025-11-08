@@ -94,9 +94,32 @@ async function testPrinterConnection() {
   return true;
 }
 
+// Check if Print Spooler service is running
+function checkPrintSpooler() {
+  if (process.platform !== 'win32') return true;
+  
+  try {
+    const result = execSync('powershell -Command "Get-Service -Name Spooler | Select-Object -ExpandProperty Status"', { encoding: 'utf8' }).trim();
+    if (result === 'Running') {
+      console.log('✅ Print Spooler service is running');
+      return true;
+    } else {
+      console.log('⚠️  Print Spooler service is not running. Status:', result);
+      console.log('   Try running: net start spooler');
+      return false;
+    }
+  } catch (error) {
+    console.error('⚠️  Could not check Print Spooler status:', error.message);
+    return false;
+  }
+}
+
 // Detect thermal printer on Windows
 function detectWindowsThermalPrinter() {
   if (process.platform !== 'win32') return null;
+  
+  // Check Print Spooler first
+  checkPrintSpooler();
   
   try {
     // Get list of printers using PowerShell
@@ -164,43 +187,133 @@ $printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : 
 $content = [System.IO.File]::ReadAllText("${tempFile.replace(/\\/g, '\\\\')}", [System.Text.Encoding]::UTF8)
 
 try {
+    $printDoc = New-Object System.Drawing.Printing.PrintDocument
+    
     if ($printerName) {
-        # Try to print to specific printer
-        $printDoc = New-Object System.Drawing.Printing.PrintDocument
+        # Validate printer exists
+        $printers = Get-Printer | Select-Object -ExpandProperty Name
+        if ($printers -notcontains $printerName) {
+            Write-Error "Printer '$printerName' not found"
+            exit 1
+        }
+        
         $printDoc.PrinterSettings.PrinterName = $printerName
         
-        $printDoc.add_PrintPage({
-            param($sender, $ev)
-            $ev.Graphics.DrawString($content, (New-Object System.Drawing.Font("Courier New", 8)), [System.Drawing.Brushes]::Black, 0, 0)
+        # Validate printer is available
+        if (-not $printDoc.PrinterSettings.IsValid) {
+            Write-Error "Printer '$printerName' is not valid or not available"
+            exit 1
+        }
+    }
+    
+    # Set up print handler
+    $printHandler = {
+        param($sender, $ev)
+        try {
+            $font = New-Object System.Drawing.Font("Courier New", 8)
+            $brush = [System.Drawing.Brushes]::Black
+            $ev.Graphics.DrawString($content, $font, $brush, 0, 0)
             $ev.HasMorePages = $false
-        })
-        
-        $printDoc.Print()
+        } catch {
+            Write-Error "Error in print handler: $($_.Exception.Message)"
+        }
+    }
+    
+    $printDoc.add_PrintPage($printHandler)
+    
+    # Attempt to print
+    $printDoc.Print()
+    
+    if ($printerName) {
         Write-Host "Printed to $printerName"
     } else {
-        # Use default printer
-        $printDoc = New-Object System.Drawing.Printing.PrintDocument
-        
-        $printDoc.add_PrintPage({
-            param($sender, $ev)
-            $ev.Graphics.DrawString($content, (New-Object System.Drawing.Font("Courier New", 8)), [System.Drawing.Brushes]::Black, 0, 0)
-            $ev.HasMorePages = $false
-        })
-        
-        $printDoc.Print()
         Write-Host "Printed to default printer"
     }
 } catch {
-    Write-Error $_.Exception.Message
+    Write-Error "Print failed: $($_.Exception.Message)"
     exit 1
 }
 `;
       
       fs.writeFileSync(psScriptPath, psScript, { encoding: 'utf8' });
       
-      // Execute the PowerShell script
-      command = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`;
-      execSync(command, { encoding: 'utf8' });
+      // Try the primary method first
+      try {
+        command = `powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`;
+        execSync(command, { encoding: 'utf8' });
+        console.log('✅ Printed using .NET PrintDocument method');
+      } catch (primaryError) {
+        console.log('⚠️  Primary method failed, trying raw print method...');
+        
+        // Fallback: Send raw text directly to printer using copy command
+        // This works better for thermal printers
+        const rawPrintScript = `
+$printerName = "${windowsPrinterName ? windowsPrinterName.replace(/"/g, '`"') : ''}"
+$tempFile = "${tempFile.replace(/\\/g, '\\\\')}"
+
+try {
+    if ($printerName) {
+        # Get printer port
+        $printer = Get-Printer -Name $printerName
+        $port = $printer.PortName
+        
+        # Try direct file copy to printer port (works for USB and network printers)
+        if ($port -like "USB*" -or $port -like "DOT4*") {
+            # For USB printers, use .NET printing with raw data
+            Add-Type -AssemblyName System.Drawing
+            $printDoc = New-Object System.Drawing.Printing.PrintDocument
+            $printDoc.PrinterSettings.PrinterName = $printerName
+            
+            # Read content
+            $content = [System.IO.File]::ReadAllText($tempFile, [System.Text.Encoding]::UTF8)
+            
+            $printDoc.add_PrintPage({
+                param($sender, $ev)
+                $font = New-Object System.Drawing.Font("Consolas", 7)
+                $ev.Graphics.DrawString($content, $font, [System.Drawing.Brushes]::Black, 10, 10)
+                $ev.HasMorePages = $false
+            })
+            
+            $printDoc.Print()
+            Write-Host "Raw printed to $printerName via USB"
+        } else {
+            Write-Error "Unsupported port type: $port"
+            exit 1
+        }
+    } else {
+        Write-Error "No printer name specified"
+        exit 1
+    }
+} catch {
+    Write-Error "Raw print failed: $($_.Exception.Message)"
+    exit 1
+}
+`;
+        const rawPrintPath = path.join(tempDir, 'raw_print.ps1');
+        fs.writeFileSync(rawPrintPath, rawPrintScript, { encoding: 'utf8' });
+        
+        try {
+          execSync(`powershell -ExecutionPolicy Bypass -File "${rawPrintPath}"`, { encoding: 'utf8' });
+          console.log('✅ Printed using raw print method');
+          fs.unlinkSync(rawPrintPath);
+        } catch (rawError) {
+          fs.unlinkSync(rawPrintPath);
+          console.log('⚠️  Raw print method also failed, trying simplest method...');
+          
+          // Final fallback: Use Windows print command with notepad (works on all Windows)
+          try {
+            const simpleCommand = `cmd /c type "${tempFile}" > PRN`;
+            execSync(simpleCommand);
+            console.log('✅ Printed using simple PRN method');
+          } catch (finalError) {
+            console.error('❌ All print methods failed');
+            console.error('Primary error:', primaryError.message);
+            console.error('Raw error:', rawError.message);
+            console.error('Final error:', finalError.message);
+            throw primaryError; // Throw original error if all methods fail
+          }
+        }
+      }
       
       // Clean up PowerShell script
       fs.unlinkSync(psScriptPath);
