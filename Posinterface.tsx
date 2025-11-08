@@ -1531,29 +1531,29 @@ const POSInterfaceCore = () => {
 
           {/* Summary Cards */}
           <div
-            className={`flex space-x-4 ${isFullscreenMode ? "px-4 mb-4" : "px-6 mb-6"}`}
+            className={`flex space-x-4 ${isFullscreenMode ? "px-4 mb-3" : "px-6 mb-4"}`}
           >
-            <div className="flex-1 bg-gray-100 rounded-xl p-6">
+            <div className="flex-1 bg-gray-100 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <div className="text-left">
-                  <div className="text-gray-600 text-base font-medium">Карта</div>
+                  <div className="text-gray-600 text-sm font-medium">Карта</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-gray-600 text-base mb-1 font-medium">Итого</div>
-                  <div className="text-4xl font-bold text-gray-900">
+                  <div className="text-gray-600 text-sm mb-0.5 font-medium">Итого</div>
+                  <div className="text-2xl font-bold text-gray-900">
                     {total.toLocaleString()}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex-1 bg-gray-100 rounded-xl p-6">
+            <div className="flex-1 bg-gray-100 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <div className="text-left">
-                  <div className="text-gray-600 text-base font-medium">Скидка</div>
+                  <div className="text-gray-600 text-sm font-medium">Скидка</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-gray-600 text-base mb-1 font-medium">К оплате</div>
-                  <div className="text-4xl font-bold text-gray-900">
+                  <div className="text-gray-600 text-sm mb-0.5 font-medium">К оплате</div>
+                  <div className="text-2xl font-bold text-gray-900">
                     {total.toLocaleString()}
                   </div>
                 </div>
@@ -1655,25 +1655,25 @@ const POSInterfaceCore = () => {
                   <table className="w-full">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="text-left p-5 font-bold text-gray-700 text-lg">
+                        <th className="text-left p-3 font-bold text-gray-700 text-base">
                           №
                         </th>
-                        <th className="text-left p-5 font-bold text-gray-700 text-lg">
+                        <th className="text-left p-3 font-bold text-gray-700 text-base">
                           Товар
                         </th>
-                        <th className="text-right p-5 font-bold text-gray-700 text-lg">
+                        <th className="text-right p-3 font-bold text-gray-700 text-base">
                           Цена
                         </th>
-                        <th className="text-center p-5 font-bold text-gray-700 text-lg">
+                        <th className="text-center p-3 font-bold text-gray-700 text-base">
                           Ед. изм.
                         </th>
-                        <th className="text-right p-5 font-bold text-gray-700 text-lg">
+                        <th className="text-right p-3 font-bold text-gray-700 text-base">
                           Кол-во
                         </th>
-                        <th className="text-right p-5 font-bold text-gray-700 text-lg">
+                        <th className="text-right p-3 font-bold text-gray-700 text-base">
                           Сумма
                         </th>
-                        <th className="text-center p-5 font-bold text-gray-700 text-lg w-20">
+                        <th className="text-center p-3 font-bold text-gray-700 text-base w-20">
                           Действия
                         </th>
                       </tr>
@@ -1713,10 +1713,10 @@ const POSInterfaceCore = () => {
                                   : "bg-white"
                             } transition-all duration-200 hover:bg-gray-100`}
                           >
-                            <td className="p-5 text-gray-900 text-base font-medium">{index + 1}</td>
-                            <td className="p-5 font-medium text-gray-900">
+                            <td className="p-3 text-gray-900 text-sm font-medium">{index + 1}</td>
+                            <td className="p-3 font-medium text-gray-900">
                               <div>
-                                <div className="text-base">{product.name}</div>
+                                <div className="text-sm">{product.name}</div>
                                 {product.barcode && (
                                   <div className="text-sm text-gray-500">
                                     Штрихкод: {product.barcode}
@@ -1736,7 +1736,7 @@ const POSInterfaceCore = () => {
                                 </div>
                               </div>
                             </td>
-                            <td className="p-5 text-right text-gray-900">
+                            <td className="p-3 text-right text-gray-900">
                               <button
                                 onClick={() => {
                                   setSelectedProductForPrice(product);
@@ -1744,12 +1744,12 @@ const POSInterfaceCore = () => {
                                   setPriceInput(product.price.toString());
                                   setIsPriceModalOpen(true);
                                 }}
-                                className="w-28 text-right px-4 py-3 text-base font-medium border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                                className="w-24 text-right px-3 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
                               >
                                 {product.price.toLocaleString()}
                               </button>
                             </td>
-                            <td className="p-5 text-center text-gray-900">
+                            <td className="p-3 text-center text-gray-900">
                               {product.product.available_units &&
                               product.product.available_units.length > 0 ? (
                                 <Select
@@ -1796,8 +1796,8 @@ const POSInterfaceCore = () => {
                                 </span>
                               )}
                             </td>
-                            <td className="p-5 text-right text-gray-900">
-                              <div className="flex items-center justify-end space-x-3">
+                            <td className="p-3 text-right text-gray-900">
+                              <div className="flex items-center justify-end space-x-2">
                                 <button
                                   onClick={() => {
                                     const newQuantity = product.quantity - 1;
@@ -1810,17 +1810,17 @@ const POSInterfaceCore = () => {
                                     }
                                   }}
                                   disabled={product.quantity <= 1}
-                                  className={`w-12 h-12 rounded-full ${
+                                  className={`w-10 h-10 rounded-full ${
                                     index === focusedProductIndex
                                       ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
                                       : "bg-gray-200 hover:bg-gray-300"
-                                  } ${product.quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-lg font-bold transition-colors`}
+                                  } ${product.quantity <= 1 ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-base font-bold transition-colors`}
                                 >
                                   −
                                 </button>
                                 <button
                                   onClick={() => handleQuantityClick(product, index)}
-                                  className={`min-w-[100px] min-h-[56px] text-center border rounded-lg px-4 py-3 text-xl font-semibold transition-all ${
+                                  className={`min-w-[80px] min-h-[40px] text-center border rounded-lg px-3 py-2 text-lg font-semibold transition-all ${
                                     index === focusedProductIndex
                                       ? "border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
                                       : "border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50"
@@ -1840,20 +1840,20 @@ const POSInterfaceCore = () => {
                                     product.quantity >=
                                     parseFloat(String(product.product.quantity))
                                   }
-                                  className={`w-12 h-12 rounded-full ${
+                                  className={`w-10 h-10 rounded-full ${
                                     index === focusedProductIndex
                                       ? "bg-blue-200 hover:bg-blue-300 text-blue-800"
                                       : "bg-gray-200 hover:bg-gray-300"
-                                  } ${product.quantity >= parseFloat(String(product.product.quantity)) ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-lg font-bold transition-colors`}
+                                  } ${product.quantity >= parseFloat(String(product.product.quantity)) ? "opacity-50 cursor-not-allowed" : ""} flex items-center justify-center text-base font-bold transition-colors`}
                                 >
                                   +
                                 </button>
                               </div>
                             </td>
-                            <td className="p-5 text-right font-bold text-gray-900 text-base">
+                            <td className="p-3 text-right font-bold text-gray-900 text-sm">
                               {product.total.toLocaleString()}
                             </td>
-                            <td className="p-5 text-center">
+                            <td className="p-3 text-center">
                               <button
                                 onClick={() => {
                                   removeProduct(product.id);
