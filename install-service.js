@@ -30,7 +30,11 @@ const svc = new Service({
 svc.on('install', function(){
   console.log('✅ Thermal Print Service installed successfully!');
   console.log('🚀 Starting service...');
-  svc.start();
+  
+  // Wait a moment before starting
+  setTimeout(() => {
+    svc.start();
+  }, 2000);
 });
 
 svc.on('start', function(){
@@ -42,10 +46,22 @@ svc.on('start', function(){
   console.log('');
   console.log('🖨️ Make sure your H-58C printer is connected via USB');
   console.log('🌐 Your web application will now automatically print receipts!');
+  
+  // Exit after successful start
+  setTimeout(() => {
+    process.exit(0);
+  }, 1000);
 });
 
 svc.on('error', function(err){
   console.error('❌ Service installation error:', err);
+  console.error('🔧 Try running as Administrator or check the logs in daemon folder');
+});
+
+// Handle if service already exists
+svc.on('alreadyinstalled', function(){
+  console.log('⚠️  Service already installed. Starting existing service...');
+  svc.start();
 });
 
 console.log('🔧 Installing Thermal Print Service as Windows Service...');

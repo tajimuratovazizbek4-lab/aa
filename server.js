@@ -44,10 +44,10 @@ async function initializePrinter() {
     for (const interfaceStr of interfaces) {
       try {
         printer = new ThermalPrinter({
-          type: PrinterTypes.EPSON, // H-58C is ESC/POS compatible
+          type: PrinterTypes.EPSON, // XP-80C is ESC/POS compatible
           interface: interfaceStr,
           characterSet: CharacterSet.PC437_USA,
-          width: 32, // 58mm paper = 32 characters
+          width: 48, // 80mm paper = 48 characters
           removeSpecialCharacters: false,
           lineCharacter: "-",
         });
@@ -55,9 +55,9 @@ async function initializePrinter() {
         // Test the connection
         await testPrinterConnection();
 
-        console.log("✅ H-58C thermal printer initialized");
+        console.log("✅ XP-80C thermal printer initialized");
         console.log(`📋 Interface: ${interfaceStr}`);
-        console.log("📋 Width: 32 characters (58mm paper)");
+        console.log("📋 Width: 48 characters (80mm paper)");
         isDeviceReady = true;
         return;
       } catch (interfaceError) {
@@ -106,13 +106,15 @@ async function printUsingSystemPrinter(content) {
       const utf8BOM = '\uFEFF';
       fs.writeFileSync(tempFile, utf8BOM + content, 'utf8');
       
-      // List of possible thermal printer names to try
+        // List of possible thermal printer names to try (in priority order)
       const possiblePrinters = [
-        'POS58 Printer',
-        'POS-58-Series',
+        'XP-80C',
+        'XP-80C (copy 1)',
+        'H-58C',
         'Xprinter XP-245B',
         'Xprinter XP-245B #2',
-        'H-58C',
+        'POS58 Printer',
+        'POS-58-Series',
         'Thermal Printer'
       ];
       
@@ -272,10 +274,10 @@ function formatQuantity(quantity) {
   return num.toFixed(10).replace(/\.?0+$/, '');
 }
 
-// Create receipt content optimized for 58mm thermal paper (32 characters per line)
+// Create receipt content optimized for 80mm thermal paper (48 characters per line)
 function createReceiptContent(data) {
-  const line = "--------------------------------";
-  const doubleLine = "================================";
+  const line = "------------------------------------------------";
+  const doubleLine = "================================================";
 
   let receipt = "";
 
@@ -402,8 +404,8 @@ app.post("/test-print", async (req, res) => {
     printer.setTextNormal();
     printer.drawLine();
     printer.alignLeft();
-    printer.println("Принтер: H-58C Thermal Printer");
-    printer.println("Ширина бумаги: 58мм");
+    printer.println("Принтер: XP-80C Thermal Printer");
+    printer.println("Ширина бумаги: 80мм");
     printer.println("Команды: ESC/POS");
     printer.drawLine();
     printer.println(`Время: ${new Date().toLocaleString("ru-RU")}`);
@@ -428,11 +430,11 @@ app.post("/test-print", async (req, res) => {
       try {
         // Create compact text content for system printer
         const textContent = `ТЕСТ ПЕЧАТИ
-================================
-Принтер: H-58C Thermal Printer
-Ширина бумаги: 58мм
+================================================
+Принтер: XP-80C Thermal Printer
+Ширина бумаги: 80мм
 Команды: ESC/POS
---------------------------------
+------------------------------------------------
 Время: ${new Date().toLocaleString("ru-RU")}
 Тест успешно выполнен!
 

@@ -3,8 +3,8 @@ const path = require('path');
 
 // Create a new service object
 const svc = new Service({
-  name: 'Thermal Print Service',
-  description: 'Local thermal printer service for automatic receipt printing',
+  name: 'H58C-Thermal-Print-Service',
+  description: 'H-58C Thermal Printer Service - Automatic receipt printing for shift closures',
   script: path.join(__dirname, 'server.js')
 });
 
