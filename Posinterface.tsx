@@ -3551,13 +3551,8 @@ const POSInterfaceCore = () => {
                     (p) => p.payment_method === "Валюта",
                   );
                   if (!hasValyuta) {
-                    const totalPaid = paymentMethods.reduce(
-                      (sum, p) => sum + (p.amount || 0),
-                      0,
-                    );
-                    const remaining = (total - discountAmount) - totalPaid;
-                    setPaymentMethods((prev) => [
-                      ...prev,
+                    // Replace all payment methods with Валюта only
+                    setPaymentMethods([
                       {
                         amount: 0,
                         payment_method: "Валюта",
