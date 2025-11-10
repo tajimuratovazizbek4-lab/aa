@@ -1,0 +1,6 @@
+2025-11-09 07:41:22 - Starting C:\Program Files (x86)\nodejs\node.exe  --harmony --max_old_space_size=4096 C:\Users\user\Downloads\thermal-printer\node_modules\node-windows\lib\wrapper.js --file C:\Users\user\Downloads\thermal-printer\server.js --scriptoptions= --log "H58C-Thermal-Print-Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2025-11-09 07:41:22 - Started 14388
+2025-11-09 12:59:09 - Starting C:\Program Files (x86)\nodejs\node.exe  --harmony --max_old_space_size=4096 C:\Users\user\Downloads\thermal-printer\node_modules\node-windows\lib\wrapper.js --file C:\Users\user\Downloads\thermal-printer\server.js --scriptoptions= --log "H58C-Thermal-Print-Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2025-11-09 12:59:09 - Started 7740
+2025-11-09 19:39:04 - Starting C:\Program Files (x86)\nodejs\node.exe  --harmony --max_old_space_size=4096 C:\Users\user\Downloads\thermal-printer\node_modules\node-windows\lib\wrapper.js --file C:\Users\user\Downloads\thermal-printer\server.js --scriptoptions= --log "H58C-Thermal-Print-Service wrapper" --grow 0.25 --wait 1 --maxrestarts 3 --abortonerror n --stopparentfirst undefined
+2025-11-09 19:39:04 - Started 7716

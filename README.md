@@ -2,6 +2,21 @@
 
 This guide explains how to set up and run the local Node.js service for automatic thermal printing from your web application.
 
+## 🚀 Quick Start - Automatic Installation
+
+**Want the service to start automatically without running `npm start`?**
+
+👉 **See [START_HERE.md](START_HERE.md) for one-click installation!**
+
+Simply run `QUICK_INSTALL.bat` as administrator and the service will:
+- ✅ Start automatically with Windows
+- ✅ Run in background (no manual start needed)
+- ✅ Work immediately after computer restarts
+
+For detailed instructions, see [AUTO_START_GUIDE.md](AUTO_START_GUIDE.md)
+
+---
+
 ## Prerequisites
 
 1. **Node.js**: You must have Node.js installed on the computer connected to the thermal printer. Download from [nodejs.org](https://nodejs.org)
