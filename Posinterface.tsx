@@ -3637,14 +3637,40 @@ const POSInterfaceCore = () => {
 
                   {payment.payment_method === "Валюта" ? (
                     <div className="space-y-3">
-                      <div className="text-sm text-gray-500">
-                        Курс: {payment.exchange_rate || exchangeRate} UZS/USD
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Курс (UZS/USD):</label>
+                        <input
+                          type="number"
+                          value={payment.exchange_rate || exchangeRate}
+                          onChange={(e) => {
+                            if (onCredit) return;
+                            const newRate = Number(e.target.value);
+                            const updated = [...paymentMethods];
+                            updated[index].exchange_rate = newRate;
+                            // Recalculate UZS amount if USD amount exists
+                            if (updated[index].usd_amount) {
+                              updated[index].amount = updated[index].usd_amount! * newRate;
+                            }
+                            setPaymentMethods(updated);
+                          }}
+                          onFocus={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onBlur={(e) => {
+                            e.stopPropagation();
+                          }}
+                          placeholder="12200"
+                          disabled={onCredit}
+                          className={`w-full text-lg font-semibold bg-white border-2 border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 ${
+                            onCredit ? "text-gray-400 cursor-not-allowed" : "text-gray-900"
+                          }`}
+                        />
                       </div>
                       <div>
                         <label className="text-xs text-gray-500 mb-1 block">USD:</label>
                         <input
                           type="number"
-                          value={payment.usd_amount || 0}
+                          value={payment.usd_amount || ""}
                           onChange={(e) => {
                             if (onCredit) return;
                             const usdAmount = Number(e.target.value);
@@ -3661,7 +3687,7 @@ const POSInterfaceCore = () => {
                           onBlur={(e) => {
                             e.stopPropagation();
                           }}
-                          placeholder="0"
+                          placeholder=""
                           disabled={onCredit}
                           className={`w-full text-3xl font-bold bg-transparent border-0 focus:outline-none focus:ring-0 p-0 ${
                             onCredit ? "text-gray-400 cursor-not-allowed" : "text-gray-900"
