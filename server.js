@@ -96,31 +96,142 @@ async function testPrinterConnection() {
 // Fallback printing using system printing with smaller font options
 async function printUsingSystemPrinter(content) {
   try {
-    // Create a temporary file with the content - Windows compatible
-    const os = require('os');
-    const path = require('path');
-    const tempDir = os.tmpdir();
-    const tempFile = path.join(tempDir, 'thermal_receipt.txt');
-    fs.writeFileSync(tempFile, content);
-
-    // Use system print command based on OS
-    let command;
     if (process.platform === 'win32') {
-      // Windows: Use notepad to print (opens print dialog)
-      command = `notepad /p "${tempFile}"`;
+      // Windows: Create a PowerShell script for raw printing
+      const tempDir = os.tmpdir();
+      const tempFile = path.join(tempDir, 'thermal_receipt.txt');
+      const psScriptFile = path.join(tempDir, 'print_raw.ps1');
+      
+      // Write content to temp file with UTF8 BOM for Windows compatibility
+      const utf8BOM = '\uFEFF';
+      fs.writeFileSync(tempFile, utf8BOM + content, 'utf8');
+      
+      // List of possible thermal printer names to try
+      const possiblePrinters = [
+        'POS58 Printer',
+        'POS-58-Series',
+        'Xprinter XP-245B',
+        'Xprinter XP-245B #2',
+        'H-58C',
+        'Thermal Printer'
+      ];
+      
+      // Get list of available printers
+      let printerName = null;
+      try {
+        const printersOutput = execSync('wmic printer get name', { encoding: 'utf8' });
+        const availablePrinters = printersOutput.split('\n')
+          .map(line => line.trim())
+          .filter(line => line && line !== 'Name');
+        
+        console.log('📋 Available printers:', availablePrinters.join(', '));
+        
+        // Find first matching thermal printer
+        for (const possible of possiblePrinters) {
+          const found = availablePrinters.find(p => p.includes(possible) || possible.includes(p));
+          if (found) {
+            printerName = found;
+            break;
+          }
+        }
+        
+        // If no thermal printer found, use first available
+        if (!printerName && availablePrinters.length > 0) {
+          printerName = availablePrinters[0];
+        }
+      } catch (e) {
+        console.log('⚠️  Could not detect printers');
+      }
+      
+      if (!printerName) {
+        throw new Error('No printer available');
+      }
+      
+      console.log(`🖨️  Printing to: ${printerName}`);
+      
+      // Create PowerShell script for raw printing with proper Cyrillic support
+      const psScript = `
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Printing
+
+$printerName = "${printerName.replace(/"/g, '`"')}"
+$filePath = "${tempFile.replace(/\\/g, '\\\\')}"
+
+try {
+    # Read file content with UTF8 encoding
+    $content = [System.IO.File]::ReadAllText($filePath, [System.Text.Encoding]::UTF8)
+    
+    # Create print document
+    $printDoc = New-Object System.Drawing.Printing.PrintDocument
+    $printDoc.PrinterSettings.PrinterName = $printerName
+    
+    # Set up print page event
+    $printDoc.add_PrintPage({
+        param($sender, $ev)
+        # Try multiple fonts with Cyrillic support
+        $fontFamilies = @("Arial", "Consolas", "Lucida Console", "Courier New")
+        $font = $null
+        foreach ($fontFamily in $fontFamilies) {
+            try {
+                $font = New-Object System.Drawing.Font($fontFamily, 9, [System.Drawing.FontStyle]::Regular)
+                break
+            } catch {
+                continue
+            }
+        }
+        if ($null -eq $font) {
+            $font = New-Object System.Drawing.Font([System.Drawing.FontFamily]::GenericMonospace, 9)
+        }
+        $brush = [System.Drawing.Brushes]::Black
+        $ev.Graphics.DrawString($content, $font, $brush, 0, 0)
+        $ev.HasMorePages = $false
+    })
+    
+    # Print
+    $printDoc.Print()
+    Write-Host "Print job sent successfully"
+    exit 0
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
+}
+`;
+      
+      fs.writeFileSync(psScriptFile, psScript, 'utf8');
+      
+      try {
+        // Execute PowerShell script
+        execSync(`powershell -ExecutionPolicy Bypass -File "${psScriptFile}"`, {
+          timeout: 15000,
+          encoding: 'utf8'
+        });
+        console.log('✅ Printed using Windows PowerShell raw printing');
+      } finally {
+        // Clean up temp files
+        try {
+          fs.unlinkSync(tempFile);
+          fs.unlinkSync(psScriptFile);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+      
+      return true;
+      
     } else {
       // macOS/Linux: Use lp command with options for smaller font
-      command = `lp -d Printer_USB_Printer_Port -o cpi=17 -o lpi=8 -o page-left=0 -o page-right=0 -o page-top=0 -o page-bottom=0 "${tempFile}"`;
+      const tempDir = os.tmpdir();
+      const tempFile = path.join(tempDir, 'thermal_receipt.txt');
+      fs.writeFileSync(tempFile, content);
+      
+      const command = `lp -d Printer_USB_Printer_Port -o cpi=17 -o lpi=8 -o page-left=0 -o page-right=0 -o page-top=0 -o page-bottom=0 "${tempFile}"`;
+      execSync(command, { timeout: 10000 });
+      
+      fs.unlinkSync(tempFile);
+      console.log('✅ Printed using macOS/Linux lp command');
+      return true;
     }
-    execSync(command);
-
-    // Clean up
-    fs.unlinkSync(tempFile);
-
-    console.log(
-        `✅ Printed using ${process.platform === 'win32' ? 'Windows' : 'macOS'} system printer with compact formatting`,
-    );
-    return true;
   } catch (error) {
     console.error("❌ System printer failed:", error.message);
     throw error;
@@ -148,6 +259,17 @@ function formatDate(dateString) {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+// Format quantity for receipt (remove unnecessary decimals)
+function formatQuantity(quantity) {
+  const num = parseFloat(quantity);
+  // If it's a whole number, show without decimals
+  if (Number.isInteger(num)) {
+    return num.toString();
+  }
+  // Otherwise, show with minimal decimals (remove trailing zeros)
+  return num.toFixed(10).replace(/\.?0+$/, '');
 }
 
 // Create receipt content optimized for 58mm thermal paper (32 characters per line)
@@ -368,6 +490,7 @@ app.post("/print-shift-closure", async (req, res) => {
 
     // Store information
     printer.alignLeft();
+    printer.bold(true);
     printer.println(`Магазин: ${data.store.name}`);
     printer.println(`Адрес: ${data.store.address}`);
     printer.println(`Телефон: ${data.store.phone_number}`);
@@ -385,17 +508,13 @@ app.post("/print-shift-closure", async (req, res) => {
     printer.drawLine();
 
     // Cash information
-    printer.bold(true);
     printer.println("НАЛИЧНЫЕ В КАССЕ:");
-    printer.bold(false);
     printer.println(`Начальная: ${formatCurrency(data.opening_cash)}`);
     printer.println(`Конечная: ${formatCurrency(data.closing_cash)}`);
     printer.drawLine();
 
     // Sales statistics
-    printer.bold(true);
     printer.println("СТАТИСТИКА ПРОДАЖ:");
-    printer.bold(false);
     printer.println(`Продаж: ${data.total_sales_count}`);
     printer.println(
         `Сумма продаж: ${formatCurrency(data.total_sales_amount)}`,
@@ -405,9 +524,7 @@ app.post("/print-shift-closure", async (req, res) => {
 
     // Payment methods
     printer.alignCenter();
-    printer.bold(true);
     printer.println("СПОСОБЫ ОПЛАТЫ");
-    printer.bold(false);
     printer.alignLeft();
     printer.drawLine();
 
@@ -439,9 +556,7 @@ app.post("/print-shift-closure", async (req, res) => {
     printer.drawLine();
     printer.alignCenter();
     printer.setTextDoubleHeight();
-    printer.bold(true);
     printer.println("ИТОГИ");
-    printer.bold(false);
     printer.setTextNormal();
     printer.alignLeft();
     printer.println(
@@ -450,15 +565,12 @@ app.post("/print-shift-closure", async (req, res) => {
     printer.println(
         `Всего фактически: ${parseFloat(data.total_actual).toFixed(2)}`,
     );
-    printer.bold(true);
     printer.println(
         `Возврат сумма: ${parseFloat(data.total_returns_amount).toFixed(2)}`,
     );
     printer.println(
         `Сумма долгов: ${formatCurrency(data.total_debt_amount)}`,
     );
-    printer.bold(false);
-    printer.bold(false);
     printer.drawLine();
 
     // Add comments if present
@@ -479,6 +591,7 @@ app.post("/print-shift-closure", async (req, res) => {
     printer.alignCenter();
     printer.println("Спасибо за работу!");
     printer.println(`${new Date().toLocaleString("ru-RU")}`);
+    printer.bold(false);
     printer.newLine();
     printer.newLine();
     printer.cut();
@@ -716,11 +829,10 @@ app.post("/print-sale-receipt", async (req, res) => {
             console.log(`  ➜ Original text: "${originalText}"`);
             console.log(`  ➜ Replaced text: "${text}"`);
             console.log(
-                `  ➜ Align: ${compStyles.textAlign || "left"}, Bold: ${compStyles.fontWeight === "bold"}`,
+                `  ➜ Align: ${compStyles.textAlign || "left"}`,
             );
 
             applyAlignment(printer, compStyles.textAlign || "left");
-            applyFontWeight(printer, compStyles.fontWeight);
 
             // Handle multi-line text
             const lines = text.split("\n");
@@ -728,7 +840,6 @@ app.post("/print-sale-receipt", async (req, res) => {
               printer.println(line);
             });
 
-            printer.bold(false);
             printer.alignLeft();
           }
           break;
@@ -746,7 +857,7 @@ app.post("/print-sale-receipt", async (req, res) => {
 
         case "itemList":
           console.log(`  ➜ Printing ${saleData.sale_items.length} items`);
-          applyFontWeight(printer, compStyles.fontWeight);
+          printer.bold(true);
 
           saleData.sale_items.forEach((item, index) => {
             const unitName =
@@ -755,21 +866,19 @@ app.post("/print-sale-receipt", async (req, res) => {
                 )?.short_name || "шт";
 
             const price = parseFloat(item.subtotal) / parseFloat(item.quantity);
+            const formattedQty = formatQuantity(item.quantity);
 
             printer.println(`${index + 1}. ${item.product_read.product_name}`);
             printer.println(
-                `   ${item.quantity} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}`,
+                `   ${formattedQty} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}`,
             );
           });
-
-          printer.bold(false);
           break;
 
         case "paymentList":
           console.log(
               `  ➜ Printing ${saleData.sale_payments?.length || 0} payment methods`,
           );
-          applyFontWeight(printer, compStyles.fontWeight);
           applyAlignment(printer, compStyles.textAlign || "left");
 
           if (saleData.sale_payments && saleData.sale_payments.length > 0) {
@@ -780,18 +889,14 @@ app.post("/print-sale-receipt", async (req, res) => {
             });
           }
 
-          printer.bold(false);
           printer.alignLeft();
           break;
 
         case "totals":
           console.log(`  ➜ Printing totals`);
           applyAlignment(printer, compStyles.textAlign || "right");
-          applyFontWeight(printer, compStyles.fontWeight);
-
 
           printer.println(`ИТОГО: ${formatCurrency(saleData.total_amount)}`);
-          printer.bold(false);
           printer.setTextNormal();
           printer.alignLeft();
           break;
@@ -868,8 +973,9 @@ app.post("/print-sale-receipt", async (req, res) => {
                     )?.short_name || "шт";
                 const price =
                     parseFloat(item.subtotal) / parseFloat(item.quantity);
+                const formattedQty = formatQuantity(item.quantity);
                 textContent += `${index + 1}. ${item.product_read.product_name}\n`;
-                textContent += `   ${item.quantity} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}\n`;
+                textContent += `   ${formattedQty} ${unitName} x ${price.toFixed(2)} = ${parseFloat(item.subtotal).toFixed(2)}\n`;
               });
               break;
 
@@ -1041,6 +1147,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
 
     // Store information
     printer.alignLeft();
+    printer.bold(true);
     printer.println(`Магазин: ${testData.store.name}`);
     printer.println(`Адрес: ${testData.store.address}`);
     printer.println(`Телефон: ${testData.store.phone_number}`);
@@ -1059,17 +1166,13 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.drawLine();
 
     // Cash information
-    printer.bold(true);
     printer.println("НАЛИЧНЫЕ В КАССЕ:");
-    printer.bold(false);
     printer.println(`Начальная: ${formatCurrency(testData.opening_cash)}`);
     printer.println(`Конечная: ${formatCurrency(testData.closing_cash)}`);
     printer.drawLine();
 
     // Sales and operations summary
-    printer.bold(true);
     printer.println("ОПЕРАЦИИ ЗА СМЕНУ:");
-    printer.bold(false);
     printer.println(`Продаж (кол-во): ${testData.total_sales_count}`);
     printer.println(
         `Сумма продаж: ${formatCurrency(testData.total_sales_amount)}`,
@@ -1085,9 +1188,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
 
     // Payment methods
     printer.alignCenter();
-    printer.bold(true);
     printer.println("СПОСОБЫ ОПЛАТЫ");
-    printer.bold(false);
     printer.alignLeft();
     printer.drawLine();
 
@@ -1119,9 +1220,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.drawLine();
     printer.alignCenter();
     printer.setTextDoubleHeight();
-    printer.bold(true);
     printer.println("ИТОГИ");
-    printer.bold(false);
     printer.setTextNormal();
     printer.alignLeft();
     printer.println(
@@ -1133,9 +1232,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.drawLine();
 
     // Status information
-    printer.bold(true);
     printer.println("СТАТУС СМЕНЫ:");
-    printer.bold(false);
     printer.println(`Активна: ${testData.is_active ? "Да" : "Нет"}`);
     printer.println(
         `Ожидает подтверждения: ${testData.is_awaiting_approval ? "Да" : "Нет"}`,
@@ -1167,6 +1264,7 @@ app.post("/test-shift-closure-with-data", async (req, res) => {
     printer.alignCenter();
     printer.println("Спасибо за работу!");
     printer.println(`${new Date().toLocaleString("ru-RU")}`);
+    printer.bold(false);
     printer.newLine();
     printer.newLine();
     printer.cut();
