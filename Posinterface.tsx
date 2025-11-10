@@ -417,6 +417,7 @@ const POSInterfaceCore = () => {
         fetchAllProducts({
           product_name: searchTerm.length > 0 ? searchTerm : undefined,
           barcode: barcodeSearchTerm.length > 0 ? barcodeSearchTerm : undefined,
+          page_size: 50,
         })
           .then((data) => setFetchedProducts(data))
           .catch((error) => {
@@ -3185,14 +3186,28 @@ const POSInterfaceCore = () => {
                       total_amount: total.toFixed(2),
                       discount_amount: discountAmount.toFixed(2),
                       sale_payments: paymentMethods
-                        .map((payment) => ({
-                          payment_method: payment.payment_method,
-                          amount: (payment.amount || (total - discountAmount)).toFixed(2),
-                          ...(payment.payment_method === "Валюта" && {
-                            exchange_rate: payment.exchange_rate,
-                            usd_amount: payment.usd_amount,
-                          }),
-                        }))
+                        .map((payment) => {
+                          if (payment.payment_method === "Валюта") {
+                            // For currency payment, amount should be in USD, not UZS
+                            const usdAmount = payment.usd_amount || 0;
+                            const rate = payment.exchange_rate || exchangeRate;
+                            const uzsEquivalent = usdAmount * rate;
+                            const changeAmount = Math.max(0, uzsEquivalent - (total - discountAmount));
+                            
+                            return {
+                              payment_method: payment.payment_method,
+                              amount: usdAmount.toFixed(2), // USD amount, not UZS
+                              exchange_rate: rate,
+                              change_amount: changeAmount.toFixed(2),
+                            };
+                          }
+                          
+                          // For other payment methods, amount is in UZS
+                          return {
+                            payment_method: payment.payment_method,
+                            amount: (payment.amount || (total - discountAmount)).toFixed(2),
+                          };
+                        })
                         .filter((p) => Number(p.amount) > 0),
                       ...(onCredit &&
                         selectedClient && {
